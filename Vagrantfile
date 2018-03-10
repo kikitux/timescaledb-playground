@@ -1,7 +1,7 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "cbednarski/ubuntu-1604"
-  config.vm.define vm_name = "timescaledb" do |timescaledb|
-    timescaledb.vm.hostname = vm_name
+  config.vm.define "timescaledb" do |timescaledb|
+    timescaledb.vm.hostname = "timescaledb"
     timescaledb.vm.provider "virtualbox" do |v|
       v.memory = 3333
       v.cpus = 2
@@ -11,8 +11,8 @@ Vagrant.configure("2") do |config|
   end
 
   (1..2).each do |i|
-    vm_name = "node#{i}"
-    config.vm.define vm_name do |node|
+    config.vm.define vm_name = "node#{i}" do |node|
+      node.vm.hostname = vm_name
     end
   end
 
