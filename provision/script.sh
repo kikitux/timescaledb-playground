@@ -45,16 +45,20 @@ CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 CREATE SCHEMA gauges;
 
 -- We start by creating a regular SQL table
-CREATE TABLE gauges.nproc (
+CREATE TABLE gauges.metrics (
   time        TIMESTAMPTZ       NOT NULL,
   hostname    TEXT              NOT NULL,
-  nproc       DOUBLE PRECISION  NOT NULL
+  name        TEXT              NOT NULL,
+  metric      DOUBLE PRECISION  NOT NULL
 );
 
-SELECT create_hypertable('gauges.nproc', 'time', 'hostname', 4);
+SELECT create_hypertable('gauges.metrics', 'time', 'hostname', 4);
 
-CREATE INDEX ON gauges.nproc (time DESC, hostname)
+CREATE INDEX ON gauges.metrics (time DESC, hostname)
   WHERE hostname IS NOT NULL;
+
+CREATE INDEX ON gauges.metrics (time DESC, name)
+  WHERE name IS NOT NULL;
 
 EOF
 

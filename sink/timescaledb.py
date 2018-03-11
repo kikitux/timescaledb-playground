@@ -13,22 +13,22 @@ if not metrics:
     exit 
 
 conn = psycopg2.connect(
+"host='localhost' " +
 "dbname='tutorial' " +
 "user='tutorial' " +
-"host='localhost' " +
 "password='tutorial' " +
 "port=5432"
 )
 
 cursor = conn.cursor()
-query = "INSERT INTO nproc (time, hostname, nproc) VALUES (to_timestamp(%s), %s, %s);"
 
 for key, value, timestamp in metrics:
-    schema, table = key.split(".")
+    schema, metric = key.split(".")   
     cursor.execute("SET search_path TO " + schema)
-
-    print schema, table, value, timestamp, platform.node()
-    data = ( timestamp, platform.node(), value)
+    print schema, metric, timestamp, platform.node(), value
+    
+    query = "INSERT INTO metrics (time, hostname, name, metric) VALUES (to_timestamp(%s), %s, %s, %s);"
+    data = ( timestamp, platform.node(), metric, value)
     cursor.execute(query, data)
 
 conn.commit()

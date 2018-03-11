@@ -14,7 +14,9 @@ conn = psycopg2.connect(
 cursor = conn.cursor()
 cursor.execute("SET search_path TO " + "gauges")
 
-#show current minute
-cursor.execute("select hostname, nproc from nproc where time >= date_trunc('minute', current_timestamp)")
-for record in cursor:
-    print record
+query = "INSERT INTO nproc (time, hostname, nproc) VALUES (to_timestamp(%s), %s, %s);"
+
+thetime = int(time.time())
+data = ( thetime, "timescaledb", "100")
+cursor.execute(query, data)
+conn.commit()
