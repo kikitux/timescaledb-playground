@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -e
+set -x
 
 mkdir -p /etc/dpkg/dpkg.cfg.d
 cat >/etc/dpkg/dpkg.cfg.d/01_nodoc <<EOF
@@ -18,8 +19,13 @@ export APTARGS="-qq -o=Dpkg::Use-Pty=0"
 # install deps
 apt-get update ${APTARGS}
 apt-get install ${APTARGS} -y apt-transport-https ca-certificates curl software-properties-common vim git tmux htop
-curl -s https://anonscm.debian.org/cgit/pkg-postgresql/postgresql-common.git/plain/pgdg/apt.postgresql.org.sh | bash
-apt-get install ${APTARGS} -y postgresql-10
+
+# `lsb_release -c -s` should return the correct codename of your OS
+echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -c -s)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+sudo apt-get update
+
+apt-get install ${APTARGS} -y postgresql-12
 
 #for stasite sink -> db
 apt-get install ${APTARGS} -y python-psycopg2
@@ -28,12 +34,9 @@ apt-get install ${APTARGS} -y python-psycopg2
 add-apt-repository -y ppa:timescale/timescaledb-ppa
 apt-get update ${APTARGS}
 
-# To install for PG 10
-apt-get install ${APTARGS} -y timescaledb-postgresql-10
-grep 'timescaledb' /etc/postgresql/10/main/postgresql.conf || {
-  echo "shared_preload_libraries = 'timescaledb'" >> /etc/postgresql/10/main/postgresql.conf
-  service postgresql restart
-}
+# To install for PG 12
+apt-get install ${APTARGS} -y timescaledb-postgresql-12
+timescaledb-tune --quiet --yes
 
 sudo -u postgres psql <<EOF
 DROP DATABASE IF EXISTS tutorial ;

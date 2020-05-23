@@ -1,5 +1,5 @@
 Vagrant.configure("2") do |config|
-  config.vm.box = "cbednarski/ubuntu-1604"
+  config.vm.box = "alvaro/bionic64"
   config.vm.define "timescaledb" do |timescaledb|
     timescaledb.vm.hostname = "timescaledb"
     timescaledb.vm.provider "virtualbox" do |v|
