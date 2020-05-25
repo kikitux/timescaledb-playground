@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -e
-set -x
 
 mkdir -p /etc/dpkg/dpkg.cfg.d
 cat >/etc/dpkg/dpkg.cfg.d/01_nodoc <<EOF
@@ -23,7 +22,7 @@ apt-get install ${APTARGS} -y apt-transport-https ca-certificates curl software-
 # `lsb_release -c -s` should return the correct codename of your OS
 echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -c -s)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-sudo apt-get update
+apt-get update
 
 apt-get install ${APTARGS} -y postgresql-12
 
@@ -37,10 +36,12 @@ apt-get update ${APTARGS}
 # To install for PG 12
 apt-get install ${APTARGS} -y timescaledb-postgresql-12
 timescaledb-tune --quiet --yes
+systemctl restart postgresql
 
 sudo -u postgres psql <<EOF
 DROP DATABASE IF EXISTS tutorial ;
 CREATE database tutorial;
+ALTER database tutorial SET timescaledb.telemetry_level=off;
 \c tutorial;
 CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 
@@ -64,6 +65,9 @@ CREATE INDEX ON gauges.metrics (time DESC, name)
   WHERE name IS NOT NULL;
 
 EOF
+
+# to make sure telemetry is off
+systemctl restart postgresql
 
 sudo -u postgres psql <<EOF
 DROP USER  IF EXISTS tutorial;
